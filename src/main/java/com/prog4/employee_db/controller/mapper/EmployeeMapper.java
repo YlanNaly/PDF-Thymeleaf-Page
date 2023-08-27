@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -55,7 +56,7 @@ public class EmployeeMapper {
         return Employee.builder()
                 .cin(nationalCard1)
                 .id(employee.getId())
-                .dateOfBirth(employee.getDateOfBirth())
+                .dateOfBirth(LocalDate.parse(employee.getDateOfBirth()))
                 .beggingDate(employee.getBeggingDate())
                 .image(photo)
                 .pays(employee.getPays())

@@ -21,7 +21,8 @@ public class Employee {
     private Long id;
     private String lastName;
     private String firstName;
-    private String dateOfBirth;
+    @DateTimeFormat(fallbackPatterns = "yyyy-MM-dd")
+    private LocalDate dateOfBirth;
     private Sex sex;
     @Column(unique = true)
     private String registrationNbr;

@@ -40,7 +40,7 @@ public class RepositoryImplementation {
         modelEmployee.setLastName(employee.getLastName());
         modelEmployee.setFirstName(employee.getFirstName());
         modelEmployee.setSocioPro(employee.getCateSocioPro().getId());
-        modelEmployee.setDateOfBirth(employee.getDateOfBirth());
+        modelEmployee.setDateOfBirth(String.valueOf(employee.getDateOfBirth()));
         modelEmployee.setSex(employee.getSex());
         modelEmployee.setRegistrationNbr(employee.getRegistrationNbr());
         modelEmployee.setPhoneNbr(phoneNumbers);

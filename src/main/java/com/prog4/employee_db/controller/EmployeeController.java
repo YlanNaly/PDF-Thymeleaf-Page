@@ -1,27 +1,41 @@
 package com.prog4.employee_db.controller;
 
+import com.lowagie.text.DocumentException;
 import com.prog4.employee_db.controller.mapper.EmployeeMapper;
 import com.prog4.employee_db.controller.model.ModelEmployee;
 import com.prog4.employee_db.entity.*;
 import com.prog4.employee_db.service.EmployeeService;
 import com.prog4.employee_db.service.MapDTOService;
 import com.prog4.employee_db.service.SocioProService;
+import com.prog4.employee_db.service.utils.ToPDF;
 import com.prog4.employee_db.service.validator.AlphanumericValidator;
 import com.prog4.employee_db.service.validator.PhoneValidator;
 import com.prog4.employee_db.repository.BusinessRepository;
 import com.prog4.employee_db.repository.EmployeeRepository;
 import com.prog4.employee_db.repository.PhoneNumberRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
+import static org.springframework.http.MediaType.APPLICATION_PDF;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.rmi.ServerException;
 import java.util.List;
 
 @AllArgsConstructor
@@ -32,6 +46,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final EmployeeRepository repository;
     private final MapDTOService mapDTOService;
+    private final ToPDF toPDF;
     private final PhoneNumberRepository phoneNumberRepository;
     private final BusinessRepository businessRepository;
     private SocioProService socioProService;
@@ -208,6 +223,27 @@ public class EmployeeController {
                 );
             }
         }
+    }
+    @GetMapping(value = "/{id}/pdf", produces = APPLICATION_PDF_VALUE)
+    public ResponseEntity<InputStreamResource> getPdf(@PathVariable("id") Long employeeId, HttpServletRequest request, HttpServletResponse response) throws DocumentException {
+        ModelEmployee modelEmployee = mapDTOService.getByEndToEndId(employeeId);
+        String parsedHtml = toPDF.parseEmployeeInfoTemplate(modelEmployee, request, response);
+
+        ITextRenderer renderer = new ITextRenderer();
+        renderer.setDocumentFromString(parsedHtml);
+        renderer.layout();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        renderer.createPDF(outputStream);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "inline; filename=fiche.pdf");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(APPLICATION_PDF)
+                .body(new InputStreamResource(inputStream));
     }
 
 }
